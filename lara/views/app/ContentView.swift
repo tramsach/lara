@@ -17,8 +17,6 @@ struct ContentView: View {
     
     @State private var showSettings: Bool = false
     @State private var dlingkcache: Bool = false
-    @State private var isAutoBypassing: Bool = false
-    @State private var bypassStatusText: String? = nil
     @State private var copiedURLToast: Bool = false
     
     init() {
@@ -196,23 +194,18 @@ struct ContentView: View {
     private var BypassSection: some View {
         Section(header: HeaderLabel(text: "3 App Bypass", icon: "square.stack.3d.up")) {
             Button(action: {
-                guard !isAutoBypassing else { return }
-                isAutoBypassing = true
-                bypassStatusText = "Bypassing..."
+                guard !mgr.isAutoBypassing else { return }
                 Haptic.shared.play(.medium)
                 
                 mgr.runAuto3AppBypass { success, count, message in
                     DispatchQueue.main.async {
-                        self.isAutoBypassing = false
                         if success {
-                            self.bypassStatusText = "\(count) app(s) bypassed"
                             Haptic.shared.notify(.success)
                             Alertinator.shared.alert(
                                 title: "3 App Bypass",
                                 body: "Successfully bypassed 3-app limit for \(count) app(s)!"
                             )
                         } else {
-                            self.bypassStatusText = "Failed"
                             Haptic.shared.notify(.error)
                             Alertinator.shared.alert(
                                 title: "Bypass Failed",
@@ -231,16 +224,23 @@ struct ContentView: View {
                             .foregroundColor(.yellow)
                     }
                     Spacer()
-                    if isAutoBypassing {
-                        ProgressView()
-                    } else if let status = bypassStatusText {
+                    if mgr.isAutoBypassing {
+                        HStack(spacing: 6) {
+                            if let status = mgr.autoBypassStatus {
+                                Text(status)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            ProgressView()
+                        }
+                    } else if let status = mgr.autoBypassStatus {
                         Text(status)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                 }
             }
-            .disabled(isAutoBypassing)
+            .disabled(mgr.isAutoBypassing)
 
             NavigationLink(destination: AppsView()) {
                 Label("Manage Sideloaded Apps", systemImage: "app.badge.checkmark")

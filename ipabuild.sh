@@ -66,10 +66,14 @@ zip -vr $APPLICATION_NAME.ipa Payload
 echo "[*] All done, cleaning up..."
 rm -rf Payload
 
-cd ..
+OUTPUT_DIR="$WORKING_LOCATION/IPA Output"
+mkdir -p "$OUTPUT_DIR"
+
 if [[ $* == *--debug* ]]; then
-mv "$WORKING_LOCATION/build/$APPLICATION_NAME.ipa" ./$APPLICATION_NAME.debug.ipa
+    mv "$WORKING_LOCATION/build/$APPLICATION_NAME.ipa" "$OUTPUT_DIR/$APPLICATION_NAME.debug.ipa"
+    echo "[*] Saved IPA to: $OUTPUT_DIR/$APPLICATION_NAME.debug.ipa"
 else
-mv "$WORKING_LOCATION/build/$APPLICATION_NAME.ipa" .
+    mv "$WORKING_LOCATION/build/$APPLICATION_NAME.ipa" "$OUTPUT_DIR/$APPLICATION_NAME.ipa"
+    echo "[*] Saved IPA to: $OUTPUT_DIR/$APPLICATION_NAME.ipa"
 fi
 rm -rf "$WORKING_LOCATION/build/"

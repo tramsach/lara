@@ -88,6 +88,8 @@ final class laramgr: ObservableObject {
     @Published var rcready: Bool = false
     @Published var rcfailed: Bool = false
     @Published var showrespring: Bool = false
+    @Published var isAutoBypassing: Bool = false
+    @Published var autoBypassStatus: String? = nil
     
     @Published var showLogs: Bool = false
     
@@ -917,14 +919,38 @@ final class laramgr: ObservableObject {
     }
 
     func runAuto3AppBypass(completion: @escaping (Bool, Int, String) -> Void) {
+        guard !isAutoBypassing else {
+            completion(false, 0, "Bypass is already in progress")
+            return
+        }
+
+        if isunsupported() {
+            completion(false, 0, "This device or iOS version is unsupported by Lara")
+            return
+        }
+
+        isAutoBypassing = true
+        autoBypassStatus = "Preparing offsets..."
+
         if !hasOffsets {
+            init_offsets()
             offsets_init()
             hasOffsets = emergencyfixfunctiontobereplacedlateronquestionmark()
         }
 
+        guard hasOffsets else {
+            isAutoBypassing = false
+            autoBypassStatus = "Offsets not found"
+            completion(false, 0, "Offsets are missing. Please fetch kernelcache first.")
+            return
+        }
+
         let executeBypass = { [weak self] in
             guard let self = self else { return }
+            self.autoBypassStatus = "Bypassing 3 App Limit..."
             let count = self.bypass3AppLimit()
+            self.isAutoBypassing = false
+            self.autoBypassStatus = "Bypassed \(count) app(s)"
             completion(true, count, "Successfully processed \(count) app(s)")
         }
 
@@ -933,6 +959,7 @@ final class laramgr: ObservableObject {
             if self.sbxready {
                 executeBypass()
             } else {
+                self.autoBypassStatus = "Initializing System..."
                 if !self.vfsready {
                     self.vfsinit()
                 }
@@ -940,6 +967,8 @@ final class laramgr: ObservableObject {
                     if sbxSuccess {
                         executeBypass()
                     } else {
+                        self.isAutoBypassing = false
+                        self.autoBypassStatus = "Sandbox escape failed"
                         completion(false, 0, "Initialize System (Sandbox escape) failed")
                     }
                 }
@@ -949,11 +978,14 @@ final class laramgr: ObservableObject {
         if dsready {
             executeInitSystem()
         } else {
+            self.autoBypassStatus = "Running Exploit..."
             self.run { [weak self] exploitSuccess in
                 guard let self = self else { return }
                 if exploitSuccess {
                     executeInitSystem()
                 } else {
+                    self.isAutoBypassing = false
+                    self.autoBypassStatus = "Exploit failed"
                     completion(false, 0, "Exploit failed")
                 }
             }
