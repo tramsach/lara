@@ -8,5 +8,18 @@
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.roooot.lara</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>lara</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

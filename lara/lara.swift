@@ -113,6 +113,60 @@ struct lara: App {
                     iconthememgr.startPendingFixupIfPossible()
                 }
             }
+            .onOpenURL { url in
+                handleOpenURL(url)
+            }
+        }
+    }
+    
+    private func handleOpenURL(_ url: URL) {
+        guard let scheme = url.scheme?.lowercased(), scheme == "lara" else { return }
+        let host = (url.host ?? "").lowercased()
+        let path = url.path.lowercased()
+        let route = host.isEmpty ? path.trimmingCharacters(in: CharacterSet(charactersIn: "/")) : host
+
+        var callbackURL: URL? = nil
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let items = components.queryItems {
+            if let callbackParam = items.first(where: { $0.name == "callback" || $0.name == "x-success" })?.value,
+               let target = URL(string: callbackParam) {
+                callbackURL = target
+            }
+        }
+
+        switch route {
+        case "bypass-3-apps", "3appbypass", "bypass", "auto-bypass":
+            Haptic.shared.play(.medium)
+            globallogger.log("[Shortcuts] Received deep link to bypass 3 app limit")
+            
+            mgr.runAuto3AppBypass { success, count, message in
+                DispatchQueue.main.async {
+                    if success {
+                        Haptic.shared.notify(.success)
+                        globallogger.log("[Shortcuts] 3 App Bypass successful: \(count) apps")
+                    } else {
+                        Haptic.shared.notify(.error)
+                        globallogger.log("[Shortcuts] 3 App Bypass failed: \(message)")
+                    }
+                    
+                    if let callback = callbackURL {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            UIApplication.shared.open(callback, options: [:], completionHandler: nil)
+                        }
+                    } else {
+                        if !success {
+                            Alertinator.shared.alert(title: "Bypass Failed", body: message)
+                        }
+                    }
+                }
+            }
+
+        case "respring":
+            globallogger.log("[Shortcuts] Received deep link to respring")
+            mgr.respring()
+
+        default:
+            globallogger.log("[Shortcuts] Unrecognized route: \(route)")
         }
     }
     

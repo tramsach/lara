@@ -831,4 +831,132 @@ final class laramgr: ObservableObject {
         }
     }
     #endif
+
+    @discardableResult
+    func bypass3AppLimit() -> Int {
+        guard sbxready else {
+            logmsg("(sbx) sandbox escape not ready")
+            return 0
+        }
+
+        let fm = FileManager.default
+        let roots = [
+            "/private/var/containers/Bundle/Application",
+            "/var/containers/Bundle/Application"
+        ]
+
+        var seen: Set<String> = []
+        var processed = 0
+
+        for root in roots {
+            guard let entries = try? fm.contentsOfDirectory(atPath: root) else { continue }
+
+            for uuid in entries {
+                let dir = root + "/" + uuid
+
+                var isDir: ObjCBool = false
+                guard fm.fileExists(atPath: dir, isDirectory: &isDir), isDir.boolValue else { continue }
+                guard let apps = try? fm.contentsOfDirectory(atPath: dir) else { continue }
+
+                for app in apps where app.hasSuffix(".app") {
+                    let bundlepath = dir + "/" + app
+
+                    let normalized = bundlepath.hasPrefix("/private/")
+                        ? String(bundlepath.dropFirst(8))
+                        : bundlepath
+
+                    if seen.contains(normalized) { continue }
+                    seen.insert(normalized)
+
+                    let mp = bundlepath + "/embedded.mobileprovision"
+                    guard access(mp, F_OK) == 0 else { continue }
+
+                    let testkey = "com.apple.installd.validatedByFreeProfile"
+                    
+                    let success = apfsown(path: bundlepath, uid: 501, gid: 501)
+                    if !success {
+                        logmsg("(sbx) failed to set ownership on: \(bundlepath)")
+                    } else {
+                        logmsg("(sbx) set ownership on: \(bundlepath)")
+                    }
+
+                    errno = 0
+                    let rc = removexattr(bundlepath, testkey, 0)
+                    if rc == 0 {
+                        logmsg("(sbx) removed xattr on: \(bundlepath)")
+                        processed += 1
+                    } else {
+                        let code = errno
+
+                        if code == ENOATTR {
+                            logmsg("(sbx) xattr already missing: \(bundlepath)")
+                            processed += 1
+                        } else {
+                            let err = String(cString: strerror(code))
+                            logmsg("(sbx) removexattr failed \(bundlepath) | errno=\(code) | \(err)")
+                        }
+                    }
+
+                    errno = 0
+                    let size = getxattr(bundlepath, testkey, nil, 0, 0, 0)
+                    if size < 0 && errno == ENOATTR {
+                        logmsg("(sbx) verified removal: \(bundlepath)")
+                    } else {
+                        logmsg("(sbx) xattr still exists on: \(bundlepath)")
+                    }
+                }
+            }
+        }
+        
+        logmsg("(sbx) processed \(processed) app(s)")
+
+        if processed == 0 {
+            logmsg("(sbx) no eligible app found for xattr test")
+        }
+        return processed
+    }
+
+    func runAuto3AppBypass(completion: @escaping (Bool, Int, String) -> Void) {
+        if !hasOffsets {
+            offsets_init()
+            hasOffsets = emergencyfixfunctiontobereplacedlateronquestionmark()
+        }
+
+        let executeBypass = { [weak self] in
+            guard let self = self else { return }
+            let count = self.bypass3AppLimit()
+            completion(true, count, "Successfully processed \(count) app(s)")
+        }
+
+        let executeInitSystem = { [weak self] in
+            guard let self = self else { return }
+            if self.sbxready {
+                executeBypass()
+            } else {
+                if !self.vfsready {
+                    self.vfsinit()
+                }
+                self.sbxescape { sbxSuccess in
+                    if sbxSuccess {
+                        executeBypass()
+                    } else {
+                        completion(false, 0, "Initialize System (Sandbox escape) failed")
+                    }
+                }
+            }
+        }
+
+        if dsready {
+            executeInitSystem()
+        } else {
+            self.run { [weak self] exploitSuccess in
+                guard let self = self else { return }
+                if exploitSuccess {
+                    executeInitSystem()
+                } else {
+                    completion(false, 0, "Exploit failed")
+                }
+            }
+        }
+    }
 }
