@@ -3,3 +3,5 @@ xcuserdata/
 *.xcuserstate
 .DS_Store
 build/
+* 00*.ipa
+* copy*.ipa

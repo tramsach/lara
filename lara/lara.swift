@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import AppIntents
 
 enum taboptions {
     case applying, tweaks, files, logs
@@ -219,3 +220,40 @@ extension UIDocumentPickerViewController {
 
 // make strings compatiable with errors
 extension String: @retroactive Error {}
+
+// MARK: - Native iOS Shortcuts (App Intents)
+@available(iOS 16.0, *)
+struct Bypass3AppLimitIntent: AppIntent {
+    static var title: LocalizedStringResource = "Bypass 3 App Limit"
+    static var description = IntentDescription("Removes the 3-app limit on sideloaded apps using Lara.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        let (success, count, message) = await withCheckedContinuation { continuation in
+            laramgr.shared.runAuto3AppBypass { success, count, message in
+                continuation.resume(returning: (success, count, message))
+            }
+        }
+        if success {
+            return .result(dialog: "Successfully bypassed 3-app limit for \(count) app(s).")
+        } else {
+            return .result(dialog: "Bypass failed: \(message)")
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+struct LaraShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(
+            intent: Bypass3AppLimitIntent(),
+            phrases: [
+                "Bypass 3 App Limit in \(.applicationName)",
+                "Run 3 App Bypass in \(.applicationName)"
+            ],
+            shortTitle: "Bypass 3 App Limit",
+            systemImageName: "square.stack.3d.up"
+        )
+    }
+}
