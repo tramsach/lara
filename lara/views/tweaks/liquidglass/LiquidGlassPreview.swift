@@ -79,10 +79,9 @@ struct ActionBG: ViewModifier {
                     .clipShape(.capsule)
             }
         } else {
-            if #available(iOS 19.0, *) {
-                content
-                    .glassEffect(.clear.interactive(), in: .capsule)
-            }
+            content
+                .background(.ultraThinMaterial)
+                .clipShape(.capsule)
         }
     }
 }
@@ -103,10 +102,9 @@ struct NotificationBG: ViewModifier {
                     .clipShape(.rect(cornerRadius: 26))
             }
         } else {
-            if #available(iOS 19.0, *) {
-                content
-                    .glassEffect(.clear, in: .rect(cornerRadius: 26))
-            }
+            content
+                .background(.ultraThinMaterial)
+                .clipShape(.rect(cornerRadius: 26))
         }
     }
 }

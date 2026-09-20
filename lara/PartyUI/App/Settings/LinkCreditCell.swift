@@ -57,35 +57,16 @@ public struct LinkCreditIcon: View {
     }
     
     public var body: some View {
-        if #available(iOS 19.0, *) {
-            AsyncImage(url: URL(string: url)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 40, height: 40)
-                    .background(Color(.systemGray6))
-                    .clipShape(Circle())
-                    .glassEffect(.regular, in: Circle())
-            } placeholder: {
-                ProgressView()
-                    .frame(width: 40, height: 40)
-            }
-        } else {
-            AsyncImage(url: URL(string: url)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 40, height: 40)
-                    .background(Color(.systemGray6))
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .stroke(Color.primary.opacity(0.2), lineWidth: 1)
-                    }
-            } placeholder: {
-                ProgressView()
-                    .frame(width: 40, height: 40)
-            }
+        AsyncImage(url: URL(string: url)) { image in
+            image
+                .resizable()
+                .scaledToFill()
+                .frame(width: 40, height: 40)
+                .background(Color(.systemGray6))
+                .clipShape(Circle())
+        } placeholder: {
+            ProgressView()
+                .frame(width: 40, height: 40)
         }
     }
 }
