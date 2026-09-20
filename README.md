@@ -36,10 +36,11 @@
 </p>
 
 ## Support
+
 | iOS Version | Support Status |
 | - | - |
-| iOS 16.x |  Possible ¹ |
-| iOS 16.7.2 |  Tested, needs more testing |
+| iOS 16.x | Possible ¹ |
+| iOS 16.7.2 | Tested, needs more testing |
 | iOS 17.0 - iOS 18.7.1 | Supported |
 | iOS 18.7.2+ | Not Supported |
 | iOS 26.0 - iOS 26.0.1 | Supported |
@@ -48,31 +49,15 @@
 ¹ While *technically* affected by the exploit lara abuses, offsets havent been found for these versions and lara therefore doesnt support them.
 
 Important Notes:
+
 - This tool does **not** work on M5 or A19 (Pro) devices regardless of iOS version because of MIE.
 - YMMV on M-series CPUs. If you are on an M-series device, try going to lara settings, selecting `Modify Offsets`, and setting `t1sz_boot` to `0x11`.
 - Issues involving lara not working on either unsupported or *technically* supported versions will be closed immediately.
 
-## Releases
-<p align="center">
-  <h3>Latest Stable</h3>
-  <a href="https://celloserenity.github.io/altdirect/?url=https://raw.githubusercontent.com/rooootdev/lara/refs/heads/main/source.json" target="_blank">
-    <img src="https://github.com/CelloSerenity/altdirect/blob/main/assets/png/AltSource_Blue.png?raw=true" alt="Add AltSource" width="200">
-  </a>
-  <a href="https://github.com/rooootdev/lara/releases/download/0.2/lara_v0.2.ipa" target="_blank">
-    <img src="https://github.com/CelloSerenity/altdirect/blob/main/assets/png/Download_White.png?raw=true" alt="Download .ipa" width="200">
-  </a>
-
-  <h3>Latest Nightly</h3>
-  <a href="https://celloserenity.github.io/altdirect/?url=https://raw.githubusercontent.com/rooootdev/lara/refs/heads/main/source_nightly.json" target="_blank">
-    <img src="https://github.com/CelloSerenity/altdirect/blob/main/assets/png/AltSource_Blue.png?raw=true" alt="Add AltSource" width="200">
-  </a>
-  <a href="https://github.com/rooootdev/lara/releases/download/nightly/lara.ipa" target="_blank">
-    <img src="https://github.com/CelloSerenity/altdirect/blob/main/assets/png/Download_White.png?raw=true" alt="Download .ipa" width="200">
-  </a>
-</p>
-
 ## Features
+
 ### Implemented
+
 - Font Overwrite
 - Custom Overwrite
 - Card Overwrite
@@ -89,14 +74,15 @@ Important Notes:
 - Performance HUD
 - JIT Enabler (only for apps with `get-task-allow`)
 - OTA Update Disabler
-- Screen Time Disabler 
+- Screen Time Disabler
 - App Decrypt
 
-
 ### Coming Soon
+
 - FTP Server
 
 ## Known Issues
+
 - wont work on M5, A19 and A19 Pro due to MTE
 - the kernel may panic when lara is closed from the app switcher.
 - dirtyzero does not work.
@@ -104,19 +90,24 @@ Important Notes:
 - remotecall is super bugged and may not work properly.
 
 ### Fixes
+
 **kernelcache download fix (manual fallback):**
 
 1. Download the IPSW tool for your device [here](https://github.com/blacktop/ipsw/releases/tag/v3.1.671).
 2. Extract the archive.
 3. Open Terminal.
 4. Navigate to the extracted folder:
+
    ```sh
    cd /path/to/ipsw_3.1.671_something_something/
    ```
+
 5. Extract the kernel:
+
    ```sh
    ./ipsw extract --kernel [drag your ipsw here]
    ```
+
 6. Get the kernelcache file.
 7. Transfer the kernelcache to your iPhone.
 8. In the Files app:
@@ -125,15 +116,17 @@ Important Notes:
 9. Rename the file to `kernelcache` (without extension).
 
 ## Tips
+
 - deleting and redownloading kernelcache is known to fix many issues. do this before asking me for support.
 - closing and reopening the app can fix font change issues.
 - respringing is needed to apply springboard changes such as font changes.
 
 ## Credits
+
 - opa334 for the kernel exploit poc, ChOma and XPF
 - AppInstaller iOS for help with offsets
 - AlfieCG for libgrabkernel2
 - Everyone who contributed! (Visible <a href="https://github.com/rooootdev/lara/graphs/contributors">Here</a>)
 
-<br> 
+<br>
 <div align="center">a beautiful kexploit ❤️</div>
